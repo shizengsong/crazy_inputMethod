@@ -9,8 +9,8 @@ tip条序号:=1
 输入法开关:=1
 全部选字键:=strsplit("qwertyuiopasdfghjkl;zxcvbnm,./")
 
-;按先中指,再食指,再无名指,小指的顺序分配选字顺序,比较好按我感觉
-选字优化表:=strsplit("erwiuodfskjlcvx,m.ghtybna;qpz/")		       
+;分配选字的按键顺序,达到更舒适的感觉,更快的选字速度
+选字优化表:=strsplit("erdfuijkwoslcvm,x.tyghbnqpa;z/")  
 
 ~Lshift::
 输入法开关:=!输入法开关
@@ -22,7 +22,7 @@ if (输入法开关){		;输入法开关提示
 	输入置空()	;清空已记录输入
 }
 tip条序号:=1
-setTimer,移除tip条,-500
+setTimer,移除tip条,-1000
 return
 
 移除tip条:
@@ -74,7 +74,7 @@ return
 }
 
 生成音词表(词典路径:=".\单字词典.txt"){
-	音词表 :={}	;需要初始化!!!!!!!!
+	音词表 :={}	;哈希数组需要初始化!!!!!!!!
 	loop,read,%词典路径%
 	{
 		;msgbox,% A_LoopReadLine
