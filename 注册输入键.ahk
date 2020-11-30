@@ -29,3 +29,5 @@ $,::
 $.::
 $/::
 $esc::
+$backspace::
+$space::

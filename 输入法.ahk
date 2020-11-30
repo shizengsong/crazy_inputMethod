@@ -1,16 +1,17 @@
-﻿;疯狂输入法,哈哈哈.....
+﻿ ;疯狂输入法,哈哈哈.....
 #persistent
 SetTitleMatchMode 2
 
 音词表:=生成音词表(".\单字词典.txt")
 输入字符 :=""
+词典字串 :=""
 键到字表 :={}
 tip条序号:=1
 输入法开关:=1
+启用英文标点:=0
+中文标点 :={",":"，" , ".":"。" ,";":"；" , "/":"、"}
 全部选字键:=strsplit("qwertyuiopasdfghjkl;zxcvbnm,./")
-
-;分配选字的按键顺序,达到更舒适的感觉,更快的选字速度
-选字优化表:=strsplit("erdfuijkwoslcvm,x.tyghbnqpa;z/")  
+选字优化表:=strsplit("erdfuijkwoslcvm,x.tyghbnqpa;z/")  	;分配选字的按键顺序,达到更舒适的感觉,更快的选字速度
 
 ~Lshift::
 输入法开关:=!输入法开关
@@ -18,7 +19,6 @@ if (输入法开关){		;输入法开关提示
 	tooltip, 中,A_caretx+10,A_carety+20
 }else{
 	tooltip,EN,A_caretx+10,A_carety+20
-	tooltip,,,,2
 	输入置空()	;清空已记录输入
 }
 tip条序号:=1
@@ -38,38 +38,62 @@ return
 
 ;输入法核心步骤
 中文输入(按键){
-	global 输入字符,音词表,tip条序号,词典词组,键到字表
+	global
+	if (instr(",./;",按键)){	;发送中文标点符号
+		if(strLen(输入字符)==0){
+			if(启用英文标点){
+				send,{%按键%}
+			}else send,% 中文标点[按键]
+			return
+		}
+	}
 	if(按键=="."){	;做下翻页操作,还没做!!!
-		return
+		;return
 	}else if(按键=="backspace"){	;做删除操作
-		return
+		gosub,删除操作
 	}else if(按键=="esc"){	;做取消操作
 		输入置空()
 		return
+	}else if(按键=="space"){		;空格键处理
+		if(strLen(输入字符)==0){
+		send,{space}
+		}else return	;do nothing
 	}else 输入字符 .=按键
-	if(strLen(输入字符)==1){
+	if (strLen(输入字符)==0){
+		输入置空()
+	}else if(strLen(输入字符)==1){
+		词典字串 :=""
+		显示候选()
 		;单个字符,以后加入数字选字,暂留空
 	}else if (strLen(输入字符)==2){
-		词典词组 := 音词表[输入字符]
-		显示词组(词典词组)
+		词典字串 := 音词表[输入字符]
+		显示候选()
 	}else if(strLen(输入字符)==3){		;暂不考虑翻页,等下优化!!!
-		if(词典词组==""){
+		if(词典字串==""){
 			send,% 输入字符
 		}else{
-			;msgbox,% 按键
 			选中字 :=键到字表[按键]
-			;msgbox,% 选中字
 			send,%选中字%
 			tip条序号:=2
 			setTimer,移除tip条,-200
 		}
 		输入置空()
 	}
+return
+删除操作:
+	if(strLen(输入字符)==0){
+		send,{%按键%}
+	}else if(strLen(输入字符)>=1){
+		输入字符 := subStr(输入字符,1,StrLen(输入字符)-1)
+	}
+return
 }
 
 输入置空(){
 	global
+	tooltip,,,,2
 	输入字符 :=""
+	词典字串 :=""
 	键到字表 :={}
 }
 
@@ -87,7 +111,7 @@ return
 				拼音 := a_loopfield
 			}
 			if (A_index==2){
-				音词表[拼音] :=a_loopfield	;提取词典词组
+				音词表[拼音] :=a_loopfield	;提取词典字串
 			}
 		}
 		if(mod(a_index,400) ==0){
@@ -99,8 +123,8 @@ return
 	return 音词表
 }
 
-显示词组(词典字串){
-	global 输入字符,全部选字键,选字优化表,键到字表
+显示候选(){
+	global 输入字符,全部选字键,选字优化表,键到字表,词典字串
 	显示字串 .= 输入字符 . "`n"
 	if (词典字串==""){
 		tooltip,% 显示字串,A_CaretX-20,A_CaretY+20,2
