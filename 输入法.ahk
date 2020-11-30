@@ -1,6 +1,7 @@
 ﻿ ;疯狂输入法,哈哈哈.....
 #singleinstance force
 SetTitleMatchMode 2
+CoordMode,caret,screen
 
 输入法开关:=1
 menu,tray,icon,.\图标文件.icl,1
@@ -16,11 +17,12 @@ tip条序号:=1
 
 ~Lshift::
 输入法开关:=!输入法开关
+获取光标位置()
 if (输入法开关){		;输入法开关提示
-	tooltip, 中,A_caretx+10,A_carety+20
+	tooltip, 中,光标位置.x+10,光标位置.y+20
 	menu,tray,icon,.\图标文件.icl,1
 }else{
-	tooltip,EN,A_caretx+10,A_carety+20
+	tooltip,EN,光标位置.x+10,光标位置.y+20
 	menu,tray,icon,.\图标文件.icl,2
 	输入置空()	;清空已记录输入
 }
@@ -129,7 +131,8 @@ return
 	global 输入字符,全部选字键,选字优化表,键到字表,词典字串
 	显示字串 .= 输入字符 . "`n"
 	if (词典字串==""){
-		tooltip,% 显示字串,A_CaretX-20,A_CaretY+20,2
+		获取光标位置()
+		tooltip,% 显示字串,光标位置.X-20,光标位置.Y+20,2
 		return
 	}
 	词组:=strSplit(词典字串,",")
@@ -149,7 +152,8 @@ return
 			显示字串 .= "`n  "
 		}
 	}
-	tooltip,% 显示字串,A_CaretX-20,A_CaretY+20,2
+	光标位置 :=获取光标位置()
+	tooltip,% 显示字串,光标位置.x,光标位置.Y.y+20,2
 	;msgbox,% 键到字表["e"]
 }
 
@@ -158,6 +162,32 @@ return
 	global 全部选字键
 	序号 := instr(全部选字键,按键)
 	return 词组[序号]
+}
+
+; 获取光标位置（坐标相对于屏幕）,河许人提供
+; From Acc.ahk by Sean, jethrow, malcev, FeiYue
+获取光标位置(Byref 光标X="", Byref 光标Y="")
+{
+	static init
+	CoordMode, Caret, Screen
+	光标X:=A_CaretX, 光标Y:=A_CaretY
+	if (!光标X or !光标Y)
+		Try {
+			if (!init)
+				init:=DllCall("LoadLibrary","Str","oleacc","Ptr")
+			VarSetCapacity(IID,16), idObject:=OBJID_CARET:=0xFFFFFFF8
+			, NumPut(idObject==0xFFFFFFF0?0x0000000000020400:0x11CF3C3D618736E0, IID, "Int64")
+			, NumPut(idObject==0xFFFFFFF0?0x46000000000000C0:0x719B3800AA000C81, IID, 8, "Int64")
+			if DllCall("oleacc\AccessibleObjectFromWindow"
+			, "Ptr",WinExist("A"), "UInt",idObject, "Ptr",&IID, "Ptr*",pacc)=0
+	{
+		Acc:=ComObject(9,pacc,1), ObjAddRef(pacc)
+			, Acc.accLocation(ComObj(0x4003,&x:=0), ComObj(0x4003,&y:=0)
+			, ComObj(0x4003,&w:=0), ComObj(0x4003,&h:=0), ChildId:=0)
+			, 光标X:=NumGet(x,0,"int"), 光标Y:=NumGet(y,0,"int")
+	}
+}
+return {x:光标X, y:光标Y}
 }
 
 ^esc::exitapp
