@@ -1,13 +1,14 @@
 ﻿ ;疯狂输入法,哈哈哈.....
-#persistent
+#singleinstance force
 SetTitleMatchMode 2
 
+输入法开关:=1
+menu,tray,icon,.\图标文件.icl,1
 音词表:=生成音词表(".\单字词典.txt")
 输入字符 :=""
 词典字串 :=""
 键到字表 :={}
 tip条序号:=1
-输入法开关:=1
 启用英文标点:=0
 中文标点 :={",":"，" , ".":"。" ,";":"；" , "/":"、"}
 全部选字键:=strsplit("qwertyuiopasdfghjkl;zxcvbnm,./")
@@ -17,8 +18,10 @@ tip条序号:=1
 输入法开关:=!输入法开关
 if (输入法开关){		;输入法开关提示
 	tooltip, 中,A_caretx+10,A_carety+20
+	menu,tray,icon,.\图标文件.icl,1
 }else{
 	tooltip,EN,A_caretx+10,A_carety+20
+	menu,tray,icon,.\图标文件.icl,2
 	输入置空()	;清空已记录输入
 }
 tip条序号:=1
@@ -116,8 +119,7 @@ return
 		}
 		if(mod(a_index,400) ==0){
 			tooltip,已载入词典.......
-			sleep,200
-			tooltip
+			setTimer,移除tip条,-300
 		}
 	}
 	return 音词表
