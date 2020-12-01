@@ -2,6 +2,7 @@
 #singleinstance force
 SetTitleMatchMode 2
 DetectHiddenWindows, On
+SetWinDelay, 0
 
 CoordMode,caret,screen
 menu,tray,icon,.\图标文件.icl,1
@@ -49,6 +50,7 @@ return
 ;输入法核心步骤
 中文输入(按键){
 	global
+	;光标位置 :=获取光标位置()
 	if (instr(",./;",按键)){	;发送中文标点符号
 		if(strLen(输入字符)==0){
 			if(中文下启用英文标点){
@@ -69,6 +71,7 @@ return
 		send,{space}
 		}else return	;do nothing
 	}else 输入字符 .=按键
+
 	if (strLen(输入字符)==0){
 		输入置空()
 	}else if(strLen(输入字符)==1){
@@ -99,7 +102,8 @@ return
 
 输入置空(){
 	global
-	Winkill,疯狂输入法选字框
+	Winhide,疯狂输入法选字框
+	Winactivate,%正在输入应用id%
 	输入字符 :=""
 	词典字串 :=""
 	键到字表 :={}
@@ -131,11 +135,11 @@ return
 }
 
 显示候选(){
-	global 输入字符,全部选字键,选字优化表,键到字表,词典字串,光标位置
+	global 输入字符,全部选字键,选字优化表,键到字表,词典字串,光标位置,正在输入应用id
 	显示输入字串 .= 输入字符 
 	显示候选字串 .="------------------------------------------------------------------`n"
 	if (词典字串==""){
-		;gosub,显示候选框
+		gosub,显示候选框
 		return
 	}
 	词组:=strSplit(词典字串,",")
@@ -161,12 +165,19 @@ return
 	return
 显示候选框:
 	光标位置 :=获取光标位置()
+	;tooltip,1
 	winget,正在输入应用id,ID,A
-	winkill,疯狂输入法选字框
-	SplashImage,, b1 h140 w420 c00 fm14 wm1 fs14 ws400 hide,%显示候选字串%,%显示输入字串%,疯狂输入法选字框,华文细黑
-	WinShow,疯狂输入法选字框
+	if(!winexist()){
+		Gui, 疯狂输入法选字框:+Owner%正在输入应用id%		;关键命令,太有用了!!!!!!
+		SplashImage,, b1 h140 w420 c00 fm14 wm1 fs14 ws400 hide,%显示候选字串%,%显示输入字串%,疯狂输入法选字框,华文细黑
+	}else{
+		ControlSetText , static1, %显示输入字符%, 疯狂输入法选字框
+		ControlSetText , static2, %显示候选字串%, 疯狂输入法选字框
+	}
 	WinMove,疯狂输入法选字框, , 光标位置.x,光标位置.y
-	Winactivate,ahk_id %正在输入应用id%
+	WinShow,疯狂输入法选字框
+	Winactivate,ahk_id %正在输入应用id%  
+	;tooltip,1
 return
 }
 
