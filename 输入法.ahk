@@ -33,9 +33,12 @@ if (输入法开关){		;输入法开关提示
 	tooltip, 中,光标位置.x+10,光标位置.y+20
 	menu,tray,icon,.\图标文件.icl,1
 }else{
+	if(strlen(输入字符)>1){	;改进shift键,使切换时字符上屏
+		send,%输入字符%
+	}
+	输入置空()
 	tooltip,EN,光标位置.x+10,光标位置.y+20
-	menu,tray,icon,.\图标文件.icl,2
-	输入置空()	;清空已记录输入
+	menu,tray,icon,.\图标文件.icl,2	;清空已记录输入
 }
 tip条序号:=1
 setTimer,移除tip条,-1000
@@ -72,13 +75,17 @@ return
 		输入置空()
 		return
 	}else if(按键=="enter"){	;直接按键上屏
-		send,%输入字符%
-		输入置空()
+		if(strLen(输入字符)==0){
+			send,{%按键%}
+		}else{
+			send,%输入字符%
+			输入置空()
+		}
 		return
 	}else if(按键=="space"){		;空格键处理
 		if(strLen(输入字符)==0){
-		send,{space}
-		}else return	;do nothing
+			send,{%按键%}
+		}else return	;do nothing 
 	}else 输入字符 .=按键
 
 	if (strLen(输入字符)==0){
