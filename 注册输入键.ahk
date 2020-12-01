@@ -31,3 +31,4 @@ $/::
 $esc::
 $backspace::
 $space::
+$enter::

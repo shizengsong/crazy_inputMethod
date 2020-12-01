@@ -21,7 +21,12 @@ tip条序号:=1
 
 #include 获取光标位置.ahk
 
+^.::中文下启用英文标点:=!中文下启用英文标点
+
 ~Lshift::
+keywait,shift,t0.15	;修正和其他的按键冲突
+if errorlevel
+	return
 输入法开关:=!输入法开关
 获取光标位置()
 if (输入法开关){		;输入法开关提示
@@ -64,6 +69,10 @@ return
 	}else if(按键=="backspace"){	;做删除操作
 		gosub,删除操作
 	}else if(按键=="esc"){	;做取消操作
+		输入置空()
+		return
+	}else if(按键=="enter"){	;直接按键上屏
+		send,%输入字符%
 		输入置空()
 		return
 	}else if(按键=="space"){		;空格键处理
