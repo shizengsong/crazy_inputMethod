@@ -148,16 +148,16 @@ return
 	}
 	for 序号,值 in 全部选字键
 	{
-		显示候选字串 .= 值 . " "
+		显示候选字串 .= 值 . ""
 		if (!键到字表[值]){
 			显示字串 .= " "
 		} 
-		显示候选字串 .= 键到字表[值] . " "
+		显示候选字串 .= 键到字表[值] 
 		if (序号==10){
 			显示候选字串 .= "`n "
 		}else if(序号==20){
 			显示候选字串 .= "`n  "
-		}
+		}else 显示候选字串 .=  "|"
 	}
 	gosub,显示候选框
 	;tooltip,% 显示字串,光标位置.x,光标位置.y+20,2
@@ -169,7 +169,7 @@ return
 	winget,正在输入应用id,ID,A
 	if(!winexist()){
 		Gui, 疯狂输入法选字框:+Owner%正在输入应用id%		;关键命令,太有用了!!!!!!
-		SplashImage,, b1 h140 w420 c00 fm14 wm1 fs14 ws400 hide,%显示候选字串%,%显示输入字串%,疯狂输入法选字框,华文细黑
+		SplashImage,, b1 h140 w460 c00 fm14 wm1 fs14 ws400 hide,%显示候选字串%,%显示输入字串%,疯狂输入法选字框,华文细黑
 	}else{
 		ControlSetText , static1, %显示输入字符%, 疯狂输入法选字框
 		ControlSetText , static2, %显示候选字串%, 疯狂输入法选字框
