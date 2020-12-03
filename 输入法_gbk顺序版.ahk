@@ -8,12 +8,12 @@ CoordMode,caret,screen
 menu,tray,icon,.\图标文件.icl,1
 
 全部选字键:=strsplit("qwertyuiopasdfghjkl;zxcvbnm,./")
-选字优化表:=strsplit("erwdfsiukjolcvx,m.tyghbnqpa;z/")  	;按先中指，再食指，再小指的顺序分配字序,以达到更舒适的感觉，及更快的速度
+选字优化表:=strsplit("qwertyuiopasdfghjkl;zxcvbnm,./")  	;按先中指，再食指，再小指的顺序分配字序,以达到更舒适的感觉，及更快的速度
 中文标点 :={",":"，" , ".":"。" ,";":"；" , "/":"、"}
 
 输入法开关:=1	;初始打开中文
 中文下启用英文标点:=0
-音词表:=生成音词表(".\单字词典.txt")
+音词表:=生成音词表(".\gbk排序字典_双拼.txt")
 输入字符 :=""
 词典字串 :=""
 键到字表 :={}
@@ -195,6 +195,13 @@ return
 	Winactivate,ahk_id %正在输入应用id%  
 	;tooltip,1
 return
+}
+
+上屏(按键,待选词组){
+	词组 :=strsplit(待选词组,",")
+	global 全部选字键
+	序号 := instr(全部选字键,按键)
+	return 词组[序号]
 }
 
 ^esc::exitapp
