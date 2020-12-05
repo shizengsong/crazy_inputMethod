@@ -9,7 +9,7 @@ menu,tray,icon,.\图标文件.icl,1
 
 显示字体 := "华文细黑"
 输入法开关:=1	;初始打开中文
-中文下启用英文标点:=0
+中文下启用英文标点:=1
 gbk单字表 :=生成音词表(".\gbk全字典.txt")		;疯狂输入法特色,包含gbk所有汉字,按计算机编码排序(即gbk2,gbk3,gbk4的顺序放字)
 词频拼音表 :=生成音词表(".\正常词典.txt")			;拼音词典,来自影子输入法的
 
@@ -27,6 +27,7 @@ gb词典字串 :=""
 字母键到字表 :={}
 数字键到字表 :={}
 翻页数:=0
+需重建窗口:=1
 tip条序号:=1
 
 #include 获取光标位置.ahk	;调用的函数文件放在这一块
@@ -174,8 +175,11 @@ return
 
 输入置空(){
 	global
-	Winhide,疯狂输入法选字框
-	Winactivate,%正在输入应用id%
+	Winkill,疯狂输入法选字框
+	需重建窗口:=1
+;	winget,活动窗口id,ID,A
+;	if(活动窗口id!=被绑定窗口id)
+;		Winactivate,ahk_id %被绑定窗口id%  
 	输入字符 :=""
 	gb词典字串 :=""
 	字母键到字表 :={}
@@ -208,9 +212,9 @@ return
 }
 
 显示候选(){
-	global 输入字符,翻页数,字母选字键,字母键到字表,数字选字键,数字键到字表
-		,gb词典字串,常用词字串,光标位置,正在输入应用id,显示字体
-
+	;global 输入字符,翻页数,字母选字键,字母键到字表,数字选字键,数字键到字表
+		;,gb词典字串,常用词字串,光标位置,活动窗口id,显示字体
+	local 显示输入字串,显示候选字串,词频词组
 	显示输入字串 .= 输入字符 
 
 	词频词组 :=strSplit(常用词字串,",")
@@ -250,17 +254,25 @@ return
 显示候选框:
 	光标位置 :=获取光标位置()
 	;tooltip,1
-	winget,正在输入应用id,ID,A
-	if(!winexist()){
-		Gui, 疯狂输入法选字框:+Owner%正在输入应用id%		;关键命令,太有用了!!!!!!  
-		SplashImage,, b1 h145 w460 c10 fm14 fs14 wm400 ws400 hide,%显示候选字串%,%显示输入字串%,疯狂输入法选字框,%显示字体%
-	}else{
-		ControlSetText , static1, %显示输入字符%, 疯狂输入法选字框
+	winget,活动窗口id,ID,A	
+	Gui, 疯狂输入法选字框:+owner%活动窗口id%
+	if(需重建窗口){ 		; && 活动窗口id!=被绑定窗口id
+		;msgbox, 活动窗口id :%活动窗口id%`t选字窗id :%选字窗id%
+		;Gui, 疯狂输入法选字框:+owner%活动窗口id%		;关键命令,太有用了!!!!!! 
+		;被绑定窗口id := 活动窗口id
+		窗口x :=光标位置.x,窗口y :=光标位置.y
+		SplashImage,,x%窗口x% y%窗口y% b1 h145 w460 c10 fm14 fs14 wm400 ws400,%显示候选字串%,%显示输入字串%,疯狂输入法选字框,%显示字体%
+		需重建窗口:=0
+		;winget,选字窗id,ID,疯狂输入法选字框
+	}else{ 
+		ControlSetText , static1, %显示输入字串%, 疯狂输入法选字框
 		ControlSetText , static2, %显示候选字串%, 疯狂输入法选字框
 	}
-	WinMove,疯狂输入法选字框, , 光标位置.x,光标位置.y
-	WinShow,疯狂输入法选字框
-	Winactivate,ahk_id %正在输入应用id%  
+	;WinMove,疯狂输入法选字框, , 光标位置.x,光标位置.y
+	;WinShow,疯狂输入法选字框
+	;winget,活动窗口id,ID,A	
+	;Winactivate,ahk_id %被绑定窗口id%  
+		
 
 return
 }
