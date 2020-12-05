@@ -254,26 +254,19 @@ return
 
 显示候选框:
 	光标位置 :=获取光标位置()
-	;tooltip,1
 	winget,活动窗口id,ID,A	
-	Gui, 疯狂输入法选字框:+owner%活动窗口id%
-	if(需重建窗口){ 		; && 活动窗口id!=被绑定窗口id
-		;msgbox, 活动窗口id :%活动窗口id%`t选字窗id :%选字窗id%
-		;Gui, 疯狂输入法选字框:+owner%活动窗口id%		;关键命令,太有用了!!!!!! 
-		;被绑定窗口id := 活动窗口id
+	if(绑定窗口id!=活动窗口id){
+		Gui, 疯狂输入法选字框:+owner%活动窗口id%		;关键命令,太有用了!!!!!! 
+		绑定窗口id :=活动窗口id	
+	}
+	if(需重建窗口){ 						
 		窗口x :=光标位置.x,窗口y :=光标位置.y
 		SplashImage,,x%窗口x% y%窗口y% b1 h145 w460 c10 fm14 fs14 wm400 ws400,%显示候选字串%,%显示输入字串%,疯狂输入法选字框,%显示字体%
 		需重建窗口:=0
-		;winget,选字窗id,ID,疯狂输入法选字框
 	}else{ 
 		ControlSetText , static1, %显示输入字串%, 疯狂输入法选字框
 		ControlSetText , static2, %显示候选字串%, 疯狂输入法选字框
 	}
-	;WinMove,疯狂输入法选字框, , 光标位置.x,光标位置.y
-	;WinShow,疯狂输入法选字框
-	;winget,活动窗口id,ID,A	
-	;Winactivate,ahk_id %被绑定窗口id%  
-		
 
 return
 }
