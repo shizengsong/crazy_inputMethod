@@ -63,5 +63,6 @@ $esc::
 $backspace::
 $space::
 $enter::
+$tab::
 $=::
 $-::
