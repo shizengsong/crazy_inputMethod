@@ -1,5 +1,6 @@
 ﻿ ;疯狂输入法,哈哈哈.....
 #singleinstance force
+#NoEnv
 SetTitleMatchMode 2
 DetectHiddenWindows, On
 SetWinDelay, 0
@@ -8,9 +9,9 @@ CoordMode,caret,screen
 menu,tray,icon,.\图标文件.icl,1
 
 显示字体 := "华文细黑"
-输入法开关:=1								;初始打开中文
+输入法开关:=1								;初始打开中文  
 中文下启用英文标点:=1
-单字模式:=0
+单字模式:=1
 
 gbk单字表 :=生成音词表(".\gbk全字典.txt")				;疯狂输入法特色,包含gbk所有汉字,按计算机编码排序(即gbk2,gbk3,gbk4的顺序放字)
 if(!单字模式){
@@ -39,31 +40,33 @@ tip条序号:=1
 
 #include 获取光标位置.ahk						;调用的函数文件放在这一块
 
+f1::
+if(单字模式:=!单字模式){
+	tooltip,单字模式,%A_caretx% ,%A_carety% 
+}else	tooltip,词语模式,%A_caretx% ,%A_carety% 
+settimer,关闭tooltip,-1000
+return
+
 ^.::
-中文下启用英文标点:=!中文下启用英文标点
-if(中文下启用英文标点){
+if(中文下启用英文标点:=!中文下启用英文标点){
 	tooltip,英文标点,%A_caretx% ,%A_carety% 
-}else{
-	tooltip,中文标点,%A_caretx% ,%A_carety% 
-}
-settimer,关闭tooltip,-500
+}else	tooltip,中文标点,%A_caretx% ,%A_carety% 
+settimer,关闭tooltip,-1000
 return
 
 ~Lshift::
 keywait,shift,t0.15							;修正和其他的按键冲突
 if errorlevel
 	return
-输入法开关:=!输入法开关
 获取光标位置()
-if (输入法开关){								;输入法开关提示
-	tooltip, 中,光标位置.x+10,光标位置.y+20
+if (输入法开关:=!输入法开关){						;输入法开关提示
+	tooltip, 中,光标位置.x,光标位置.y
 	menu,tray,icon,.\图标文件.icl,1
 }else{
-	if(strlen(待转化字符)>1){						;改进shift键,使切换时字符上屏
+	if(strlen(待转化字符)>1)						;改进shift键,使切换时字符上屏
 		send,% 已确认文字 . 待转化字符
-	}
 	输入置空()
-	tooltip,EN,光标位置.x+10,光标位置.y+20
+	tooltip,EN,光标位置.x,光标位置.y
 	menu,tray,icon,.\图标文件.icl,2					;清空已记录输入
 }
 tip条序号:=1
@@ -123,6 +126,7 @@ return
 		}else 选中词:=数字键到词表[按键]
 		if(选中词){
 			已确认文字.=选中词
+			翻页数:=0
 			if(strlen(插入字符)>0){
 				插入字符:=substr(插入字符,strlen(选中词)*2+1)
 				if(strlen(插入字符)==0){
@@ -180,6 +184,7 @@ return
 			return
 		}else{
 			已确认文字.=选中字
+			翻页数:=0
 			if(strlen(插入字符)>0){
 				插入字符:=substr(插入字符,3)
 				if(strlen(插入字符)==0){
@@ -217,7 +222,7 @@ return
 			插入状态:=1
 		}
 	}else {								;输入状态的删除
-		待转化字符 := subStr(待转化字符,1,-1)
+		待转化字符 := subStr(待转化字符,1,-2)
 	}
 	if (strlen(待转化字符)==0){
 		send,% 已确认文字 . 句末标点
@@ -278,7 +283,6 @@ return
 				}
 				 if(A_index==1){
 					拼音 := a_loopfield
-;					msgbox,% a_loopfield
 				}
 				if (A_index==2){
 					待返回音词表[拼音] :=a_loopfield	;提取gb词典字串
@@ -298,17 +302,24 @@ return
 	return 待返回音词表
 }
 
-f1::msgbox,% 常用词典字串
-
 产生候选(){
 	local 显示输入字串,显示候选字串,词频词组
 	显示输入字串 .= 已确认文字 . 插入字符
 	if(插入状态){
 		显示输入字串 .="_  " . 待转化字符 . 句末标点
 	}else 显示输入字串 .= 待转化字符 . "_"  . 句末标点
-	词频词组 :=strSplit(常用词典字串,",")
+	词频词组 :=strSplit(常用词典字串,",")	
+	gb词典词组:=strSplit(gb词典字串,",")
+	for 序号,值 in 字母选字键组
+		字母键到字表[值]:=gb词典词组[序号+翻页数*26]		;检测和字母选区重合的字
 	for 序号,值 in 数字选字键组{
 		字:=数字键到词表[值] :=词频词组[序号+翻页数*10]	;数字做键,词做值
+		if(选字状态){
+			for k,字母 in 字母选字键组{
+				if (字母键到字表[字母]==字)
+					值:=字母,break
+			}
+		}		
 		显示候选字串 .= 值 . "." 
 		if (!字){
 			显示候选字串 .= "　"
@@ -316,6 +327,8 @@ f1::msgbox,% 常用词典字串
 		if (序号==10){
 			显示候选字串 .= "`n "
 		}else 显示候选字串 .=  " "
+		if (翻页数==0)
+			第一页常用字 .= 字
 	}
 	显示候选字串 .="--------------------------------------------------------------------`n"
 
@@ -324,11 +337,13 @@ f1::msgbox,% 常用词典字串
 		gosub,显示候选框
 		return
 	}
-	gb词典词组:=strSplit(gb词典字串,",")
 	for 序号,值 in 字母选字键组
 	{
-		字 :=字母键到字表[值]:=gb词典词组[序号+翻页数*26]
-		显示候选字串 .= 值 . ""
+		字 :=字母键到字表[值]				; :=gb词典词组[序号+翻页数*26]	;
+		if(翻页数!=0 && 字!="" && instr(第一页常用字,字)){
+			显示候选字串 .= "♦" . 值 
+		}else 显示候选字串 .= 值 . "."
+		
 		if (!字){
 			显示候选字串 .= "　"
 		}else 显示候选字串 .= 字 
