@@ -64,5 +64,6 @@ $backspace::
 $space::
 $enter::
 $tab::
+$delete::
 $=::
 $-::
