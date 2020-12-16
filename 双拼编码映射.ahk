@@ -1,5 +1,4 @@
 ﻿;双拼编码:="微软拼音"	;这句已放至主文件中
-
 ;映射后的拼音,采用智能ABC编码(我个人的习惯,词典也是采用双拼编码存储,可以减少体积)
 ;这个代码是将任意双拼编码先查表映射为全拼,再转化为ABC双拼,因词典是按ABC双拼存储的
 全拼音:="oa,ol,oj,oh,ok,ba,bl,bj,bh,bk,bq,bf,bg,bi,bw,bz,bx,bc,by,bo,bu,bn,ca,cl,cj,ch,ck,ce,cf,cg,ea,el

@@ -1,7 +1,6 @@
 ; 获取光标位置（坐标相对于屏幕）,河许人提供
 ; From Acc.ahk by Sean, jethrow, malcev, FeiYue
 
-
 获取光标位置(Byref 光标X="", Byref 光标Y=""){
 	static init
 	CoordMode, Caret, Screen
