@@ -73,18 +73,30 @@ if(中文下启用英文标点:=!中文下启用英文标点){
 settimer,关闭tooltip,-1000
 return
 
+^space::gosub,切换输入法
 ~Lshift::
 keywait,shift,T1							;用此句修正和其他的按键的冲突
 if(A_thishotkey!="~Lshift")
 	return
-获取光标位置()
+切换输入法:
+光标位置:=获取光标位置()
 if (输入法开关:=!输入法开关){						;切换中英文
-	tooltip, 中,%A_caretx% ,% A_carety-25
+	mousegetpos,x,y
+	tooltip, 中文输入,% x ,% y-25
 	menu,tray,icon,%A_ScriptDir%\图标\图标文件.icl,1
+	Hotkey, IfWinActive
+	for 序号,值 in 字母选字键组{
+		hotkey,% "$" 值,on
+	}
 }else{
 	send,% 已确认文字 . 插入字符 . 待转化字符 . 句末标点
 	输入置空()
-	tooltip,EN,%A_caretx% ,% A_carety-25
+	mousegetpos,x,y
+	tooltip,　EN　,% x ,% y-25
+	Hotkey, IfWinActive
+	for 序号,值 in 字母选字键组{
+		hotkey,% "$" 值,off
+	}	
 	menu,tray,icon,%A_ScriptDir%\图标\图标文件.icl,2		;清空已记录输入
 }
 setTimer,关闭tooltip,-1000
