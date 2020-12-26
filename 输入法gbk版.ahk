@@ -13,10 +13,11 @@ DetectHiddenWindows, On
 SetWinDelay, 0
 Sendmode input
 CoordMode,caret,screen
-menu,tray,icon,%A_ScriptDir%\图标\图标文件.icl,1				;拖盘图标,来自影子输入法,觉得图标字体不错,借用一下
+menu,tray,icon,%A_ScriptDir%\图标\图标文件.icl,1			;拖盘图标,来自影子输入法,觉得字体不错,借用一下
 
 ;双拼编码, 设置文件在双拼编码文件夹下,若没有则到双拼编码文件夹中去建(文件后缀为txt,非ini,注意)
-;可用的有智能ABC,微软拼音,拼音加加,紫光拼音,搜狗拼音,自然码,小鹤双拼,自行修改
+;可用的有：智能ABC,微软拼音,拼音加加,紫光拼音,搜狗拼音,自然码,小鹤双拼,自行修改
+
 双拼编码:="智能ABC"
 #include 双拼编码映射.ahk
 
@@ -26,7 +27,8 @@ menu,tray,icon,%A_ScriptDir%\图标\图标文件.icl,1				;拖盘图标,来自�
 输入法开关:=1								;初始打开中文
 ;自动进入选字模式时间:=600						;两个字符时，自动进入选字的时间，单位为毫秒，越小越灵敏，小心使用，注释掉则不自动进入选字
 
-字体 := "华文细黑"							;字体调整过后,排版可能会有些问题,请在下面调分割符和窗口高度宽度
+字体 := "华文细黑"							;字体调整过后，排版可能会有些问题,请在下面调分割符和窗口高度宽度
+									;华文细黑比较好看，建议使用
 
 if(字体=="华文细黑"){
 	初始高度:=50, 初始宽度:=520,单行高度:=21,字体大小:=14,文字宽度:=9
@@ -35,8 +37,8 @@ if(字体=="华文细黑"){
 }else{
 	初始高度:=45, 初始宽度:=480,单行高度:=18,字体大小:=13,文字宽度:=17
 }
-gbk单字表 :=生成音词表(A_ScriptDir . ".\词典\gbk全字典.txt")		;疯狂输入法特色,包含gbk所有汉字,按计算机编码排序(即gbk2,gbk3,gbk4的顺序放字)
-常用拼音表 :=生成音词表(A_ScriptDir . "\词典\小词典.txt")
+gbk单字表 :=生成音词表(A_ScriptDir . "\词典\gbk全字典.txt")		;疯狂输入法特色，包含gbk所有汉字,按计算机编码排序(即gbk2,gbk3,gbk4的顺序放字)
+常用拼音表 :=生成音词表(A_ScriptDir . "\词典\小词典.txt")		;一个比较小的词典，载入快，缺点就是比较小，但是还算够用，因为我们还有gbk
 单字模式:=0								;每次只打一个字的单字模式，不太常用。F1:切换单字模式 
 字母选字键:="qwertyuiopasdfghjklzxcvbnm"				;所有的字母选字键
 数字选字键:="1234567890"						;所有的数字选字键，要减少选字项，只需要改这个
@@ -46,25 +48,25 @@ gbk单字表 :=生成音词表(A_ScriptDir . ".\词典\gbk全字典.txt")		;疯�
 		, "+3":"{#}" ,"+4":"￥" , "+5":"%" , "+6":"……" , "+7":"&" 
 		, "+8":"*" , "+9":"（" , "+0":"）" ,  "+,":"《" , "+.":"》" 
 		, "+/":"？" , "[":"【" , "]":"】" , "+;":"：","+-":"—" }
-英文括号按键:={"+9":"(){left}", "+,":"<>{left}",  "[":"[]{left}"	;简化括号的发送问题
+英文括号按键:={"+9":"(){left}", "+,":"<>{left}",  "[":"[]{left}"	;简化括号的发送问题，发送对称括号
 		,  "+[":"{{}{}}{left}", "+'":"""""{left}"}
 引号已发送:=1								;解决双引号问题
 已确认文字:= 插入字符:= 构造词记忆:=用户词典字符:= 待转化字符 := 句末标点 :=gb词典字串 :=常用词典字串:=""
 用户词典表:={}, 字母键到字表 :={}, 数字键到词表 :={}
 上翻页键 := "-[,", 下翻页键 := "=]."
-翻页数:=0, 窗口未显示:=1, 选字状态:=0
+翻页数:=选字状态:=0
 
 #include 获取光标位置.ahk						;调用的函数文件放在这一块
 
-#if
-f1::
+#if			
+f1::									;切换单字模式的按键,自行修改
 if(单字模式:=!单字模式){
 	tooltip,单字模式,%A_caretx% ,% A_carety-25
 }else	tooltip,词语模式,%A_caretx% ,% A_carety-25
 settimer,关闭tooltip,-1000
 return
 
-^.::
+^.::									;ctrl+句号切换中英文标点
 if(中文下启用英文标点:=!中文下启用英文标点){
 	tooltip,英文标点,%A_caretx% ,% A_carety-25
 }else	tooltip,中文标点,%A_caretx% ,% A_carety-25
@@ -72,18 +74,18 @@ settimer,关闭tooltip,-1000
 return
 
 ~Lshift::
-keywait,shift,T1							;用此句修正和其他的按键
+keywait,shift,T1							;用此句修正和其他的按键的冲突
 if(A_thishotkey!="~Lshift")
 	return
 获取光标位置()
-if (输入法开关:=!输入法开关){						;切换中英文	
+if (输入法开关:=!输入法开关){						;切换中英文
 	tooltip, 中,%A_caretx% ,% A_carety-25
-	menu,tray,icon,.\图标文件.icl,1
+	menu,tray,icon,%A_ScriptDir%\图标\图标文件.icl,1
 }else{
 	send,% 已确认文字 . 插入字符 . 待转化字符 . 句末标点
 	输入置空()
 	tooltip,EN,%A_caretx% ,% A_carety-25
-	menu,tray,icon,.\图标文件.icl,2					;清空已记录输入
+	menu,tray,icon,%A_ScriptDir%\图标\图标文件.icl,2		;清空已记录输入
 }
 setTimer,关闭tooltip,-1000
 return
@@ -97,7 +99,9 @@ return
 if(instr(A_thisHotKey,"$")){
 	按键 :=subStr(A_thisHotKey,2)					;去除热键$符号,获取热键
 }else 按键:=A_thisHotKey
-if(输入法开关 && 获取光标位置().类型!="mouse"){
+if(getkeystate("capslock","t")){
+	原义发送(按键)
+}else if(输入法开关 && 获取光标位置().类型!="mouse"){
 	中文输入(按键)
 }else 原义发送(按键)
 return
@@ -119,29 +123,33 @@ return
 		send,{%按键%}						;特殊按键发送要用 {%按键%}，普通按键发送要用% 按键
 	}else if(英文括号按键["" . 按键]){				;发送对称括号，方便打括号
 		send,% 英文括号按键["" . 按键]
+	}else if(getkeystate("capslock","t")){
+		StringUpper,按键,按键
+		send,% 按键
 	}else send,% 按键
+	
 }
 
-;输入法核心步骤
-中文输入(按键){
+
+中文输入(按键){								;输入法核心步骤
 	local 选中字,选中词
 	字符数:=strLen(待转化字符)
 	settimer,超时进入选字状态,off
-	if(!已确认文字)								;记录用户构造词,只具有短期记忆
+	if(!已确认文字)							;记录用户构造词,只具有短期记忆
 		用户词典字符:=待转化字符
 	if(单字模式 && 字符数==1 && instr(字母选字键,按键) ){
 		待转化字符 .= 按键, 产生字串(待转化字符), 选字状态:=1
 		gosub,判断发送上屏
 		return
 	}
-	if (字符数==0 && !instr(字母选字键,按键) && 按键!="+'"){		;处理非打字状态下的特殊按键，包括符号，排除引号
+	if (字符数==0 && !instr(字母选字键,按键) && 按键!="+'"){	;处理非打字状态下的特殊按键，包括符号，排除引号
 		if(!中文下启用英文标点 && 中文标点["" . 按键]){
-			send,% 中文标点["" . 按键]				;强制转换按键为字符类型，只有这个古怪的语法起作用-_-||……,
+			send,% 中文标点["" . 按键]			;强制转换按键为字符类型，只有这个古怪的语法起作用-_-||……,
 		}else 原义发送(按键)
 		return
-	}else if(instr(数字选字键,按键) ||按键=="space"||按键=="tab"||中文标点["" . 按键]){			;数字及空格等选字键
+	}else if(instr(数字选字键,按键) ||按键=="space"||按键=="tab"||中文标点["" . 按键]){	;数字及空格等选字键
 		if(中文标点["" . 按键]){
-			if(instr(下翻页键,按键)||instr(上翻页键,按键) ){	;若标点为句号或逗号，则进行翻页
+			if(instr(下翻页键,按键)||instr(上翻页键,按键) ){			;若标点为句号或逗号，则进行翻页
 				if (选字状态) {			
 					if(instr(下翻页键,按键) && (数字键到词表[1]||字母键到字表["q"])){
 						翻页数+=1
@@ -164,7 +172,7 @@ return
 					return
 				}
 		}else if(按键=="space") {
-				if(!选中词:=用户自造词){					;存在用户自造词情况下，使用用户自造词
+				if(!选中词:=用户自造词){			;存在用户自造词情况下，使用用户自造词
 					选中词:=数字键到词表[1]
 				}
 		}else 选中词:=数字键到词表[按键]
@@ -253,20 +261,20 @@ return
 		}else if(按键=="delete")
 			待转化字符 := subStr(待转化字符,2)		;删除剩余字符的句首字母	
 	}else if (strlen(已确认文字)>0){
-		if(按键=="backspace"){						;已有确认文字,开始删除 
-			if(strlen(已确认文字)<=2){				;已确认文字较短情况下
+		if(按键=="backspace"){					;已有确认文字,开始删除 
+			if(strlen(已确认文字)<=2){			;已确认文字较短情况下
 				已确认文字:="", 待转化字符:=用户词典字符
-			}else if(!数字键到词表[1]){				;拼不出字的情况下
+			}else if(!数字键到词表[1]){			;拼不出字的情况下
 				if(strlen(待转化字符)!=1){
 					待转化字符:=substr(待转化字符,1,1)
 				}else 待转化字符:=""
 			}else 已确认文字:=substr(已确认文字,1,-1), 插入状态:=1
-		}else if(按键=="delete"){					;delete键删除	
+		}else if(按键=="delete"){				;delete键删除	
 			待转化字符:=subStr(待转化字符,2)
 			插入状态:=1
 		}
 		用户词典字符 :="", 选字状态:=0
-	}else if(按键=="backspace"){								;转化前,删除	
+	}else if(按键=="backspace"){					;转化前的删除	
 			if(!数字键到词表[1]){
 				if(strlen(待转化字符)!=1){
 					待转化字符:=substr(待转化字符,1,1)
@@ -309,13 +317,14 @@ return
 	}else 产生候选()
 return
 
-保存构造词:									;两秒内按删除,会删除用户构造词
+保存构造词:								;两秒内按删除,会删除用户构造词
 	构造词记忆:=""
 return
 
 输入置空(){
 	global
 	gui,destroy
+	gui,疯狂输入法选字窗:destroy
 	用户词典字符:=用户自造词:=gb词典字串 :=已确认文字:=插入字符 := 待转化字符 := 句末标点 :=""
 	插入状态:=选字状态:=翻页数:=0
 	字母键到字表 :={}
@@ -361,10 +370,10 @@ return
 		{
 				if(当前行=="")
 					continue
-				 if(A_index==1)
+				if(A_index==1)
 					拼音 := a_loopfield
 				if (A_index==2)
-					待返回音词表[拼音] :=a_loopfield	;提取gb词典字串
+					待返回音词表[拼音] :=a_loopfield
 		}
 		if(mod(a_index,500) ==0){
 			行数:=A_index
@@ -429,12 +438,8 @@ return
 
 显示候选框:
 	光标位置 :=获取光标位置()
-	winget,活动窗口id,ID,A	
-	if(绑定窗口id!=活动窗口id){
-		Gui, 疯狂输入法选字框:+owner%活动窗口id%				;绑定输入法的窗口到活动窗口,不绑定好像容易出错	
-		绑定窗口id :=活动窗口id	
-	}
-	if(!winexist("疯狂输入法选字框")){						;初始化输入法窗口
+	if(!winexist("疯狂输入法选字窗")){				;初始化输入法窗口
+;		gui,destroy						;防止出现BUG,窗口还在
 		if(光标位置.x<A_ScreenWidth -初始宽度){
 			窗口x :=光标位置.x
 		}else	窗口x :=A_ScreenWidth -初始宽度
@@ -444,14 +449,19 @@ return
 		gui, font,% "s" 字体大小, %字体%
 		Gui, Margin ,10,0
 		Gui, +AlwaysOnTop +Disabled -SysMenu +Owner -Caption +Border +Theme
-		Gui, Add, Text,% "v输入文本 " "w" 初始宽度 " y2" " h"	单行高度*2, %显示输入字串%
-		Gui, Add, pic,% "v分割线 " "w" 初始宽度-40 " h1" " x15",%A_ScriptDir%\图标\分割线.bmp
-		Gui, Add, Text,% "v候选文本 " "w" 初始宽度 " center", %显示候选字串%
-		Guicontrol,hide,分割线
-		Gui, Show,x%窗口x% y%窗口y% h%初始高度% w%初始宽度%  NoActivate, 疯狂输入法选字框
+		Gui, Add, Text,% "w" 初始宽度 " y2" " h"	单行高度*2, %显示输入字串%
+		Gui, Add, pic, % "w" 初始宽度-40 " h1" " x15",%A_ScriptDir%\图标\分割线.bmp
+		Gui, Add, Text,% "w" 初始宽度 " center", %显示候选字串%
+		Guicontrol,hide,static2
+		Gui, Show,x%窗口x% y%窗口y% h%初始高度% w%初始宽度%  NoActivate, 疯狂输入法选字窗
 	}else{
+		winget,活动窗口id,ID,A	
+		if(绑定窗口id!=活动窗口id){
+			Gui, 疯狂输入法选字窗:+owner%活动窗口id%		;绑定输入法的窗口到活动窗口,不绑定好像容易出错	
+			绑定窗口id :=活动窗口id	
+		}
 		字符数:=0
-		loop % strlen(数字选字键){						;窗口宽度计算
+		loop % strlen(数字选字键){				;窗口宽度计算
 			字符数+=strlen(数字键到词表[A_index-1])
 		}
 		if(字符数+strlen(用户自造词)>11){
@@ -460,23 +470,23 @@ return
 		窗口高度:=初始高度
 		if(选字状态){
 			候选窗高度:=单行高度*3
-			Guicontrol,show,分割线
+			Guicontrol,show,static2
 		}else {
 			候选窗高度:=0
-			Guicontrol,hide,分割线
+			Guicontrol,hide,static2
 		}
 		窗口高度+=候选窗高度
-		guicontrol,move,输入文本,% "w" 宽度
-		guicontrol,move,候选文本,% "w" 宽度 "h" 候选窗高度
-		GuiControl, , 输入文本 ,%显示输入字串%
-		GuiControl, , 候选文本 ,%显示候选字串%
-		guicontrol,move,分割线,% "w" 宽度-40 " h1"
-		WinMove, 疯狂输入法选字框, , , ,%宽度%,% 窗口高度
+		guicontrol,move,static1,% "w" 宽度
+		guicontrol,move,static3,% "w" 宽度 "h" 候选窗高度
+		GuiControl, , static1 ,%显示输入字串%
+		GuiControl, , static3 ,%显示候选字串%
+		guicontrol,move,static2,% "w" 宽度-40 " h1"
+		WinMove, 疯狂输入法选字窗, , , ,%宽度%,% 窗口高度
 	}
 return
 }
 
-^esc::exitapp										;ctrl+esc强制退出输入法
+^esc::exitapp								;ctrl+esc强制退出输入法
 
-#ifwinactive 输入法gbk版.ahk								;在脚本保存后重启脚本
+#ifwinactive 输入法gbk版.ahk						;在脚本保存后重启脚本
 ~^s::reload 		
