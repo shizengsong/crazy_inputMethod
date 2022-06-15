@@ -15,7 +15,7 @@ Sendmode input
 CoordMode,caret,screen
 menu,tray,icon,%A_ScriptDir%\图标\图标文件.icl,1				;拖盘图标,提取自影子输入法
 
-使用英文标点的程序列表:="emeditor.exe,scite.exe,notepad.exe"			;请把默认使用英文标点的程序写到这里
+使用英文标点的程序列表:="emeditor.exe,scite.exe,notepad.exe,explorer.exe"			;请把默认使用英文标点的程序写到这里
 										;列表内的程序,将默认英文标点,切换中文标点变为临时切换
 启用中文标点:=1									;是否启用全局英文标点,1为启用,0为禁用.切换快捷键为ctrl+句号
 
@@ -69,7 +69,7 @@ winget,上个进程名,ProcessName,A
 if(上个进程名&&instr(使用英文标点的程序列表,上个进程名)){
 			启用中文标点:=0
 }else	启用中文标点:=1
-
+setTimer,根据进程切换输入法和标点,500
 #include 获取光标位置.ahk							;调用的函数文件放在这一块
 
 #if			
@@ -89,27 +89,33 @@ return
 	settimer,关闭tooltip,-1000
 return
 
-^space::gosub,切换输入法
-;~Lshift::
+^space::
+输入法开关:=!输入法开关
+gosub,切换输入法
+return
+
+~Lshift::
 keywait,shift,T0.2								;用此句修正和其他的按键的冲突
 if(A_thishotkey!="~Lshift"||errorlevel)
 	return
+输入法开关:=!输入法开关
+
 切换输入法:
 光标位置:=获取光标位置()
-if (输入法开关:=!输入法开关){							;切换中英文
+if (输入法开关){							;切换中英文
 	mousegetpos,x,y
 	Hotkey, IfWinActive
 	for 序号,值 in 所有按键{
 		hotkey,% "$" 值,on
 	}
 	hotkey,^.,on
-	tooltip, 中文输入,% x ,% y-25
+	tooltip,中文,% x ,% y-25
 	menu,tray,icon,%A_ScriptDir%\图标\图标文件.icl,1
 }else{
 	send,% 已确认文字 . 插入字符 . 原字符 . 句末标点
 	输入置空()
 	mousegetpos,x,y
-	tooltip,　EN　,% x ,% y-25
+	tooltip,EN,% x ,% y-25
 	Hotkey, IfWinActive
 	for 序号,值 in 所有按键{
 		hotkey,% "$" 值,off
@@ -170,7 +176,6 @@ return
 		return
 	}
 	if (字符数==0 && !instr(字母选字键,按键)){					;处理非打字状态下的特殊按键，包括符号
-		根据进程切换标点()
 		if(启用中文标点 && 中文标点["" . 按键]){				;强制转换按键为字符类型，只有这个古怪的语法起作用-_-||……,
 			发送中文标点(按键)					;正常发送中文标点
 		}else 原义发送(按键)
@@ -546,16 +551,22 @@ return
 	}
 return
 }
-根据进程切换标点(){
-	global 
+
+
+根据进程切换输入法和标点:
 	winget,进程名,ProcessName,A
 	if(进程名 != 上个进程名){
 		if(进程名&&instr(使用英文标点的程序列表,进程名)){
 			启用中文标点:=0
-		}else	启用中文标点:=1
+			输入法开关:=1
+		}else{
+			输入法开关:=0
+			启用中文标点:=1
+		}
+		gosub,切换输入法
 		上个进程名:=进程名
 	}
-}
+return
 ^esc::exitapp									;ctrl+esc强制退出输入法
 
 #ifwinactive 输入法gbk版.ahk							;在脚本保存后重启脚本
