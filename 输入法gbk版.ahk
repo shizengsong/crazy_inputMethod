@@ -41,7 +41,7 @@ if(字体=="华文细黑"){
 	初始高度:=45, 初始宽度:=480,单行高度:=18,字体大小:=13,文字宽度:=17
 }
 
-数字按键:="1234567890"							;所有的数字按键，要减少选字项，可以改这个
+数字按键:="1234567890"								;所有的数字按键，要减少选字项，可以改这个(不保证不出错)
 字母按键:="qwertyuiopasdfghjklzxcvbnm"					;所有的字母按键
 大写字母按键 :="+q+w+e+r+t+y+u+i+o+p+a+s+d+f+g+h+j+k+l+z+x+c+v+b+n+m"	;shift+字母按键
 gbk单字表 :=生成音词表(A_ScriptDir . "\词典\gbk全字典.txt")			;疯狂输入法特色，包含gbk所有汉字,按计算机编码排序(即gbk2,gbk3,gbk4的顺序放字)
@@ -57,7 +57,7 @@ gbk单字表 :=生成音词表(A_ScriptDir . "\词典\gbk全字典.txt")			;疯�
 英文括号按键:={"+9":"(){left}", "+,":"<>{left}",  "[":"[]{left}"				;简化括号的发送问题，发送对称括号
 		,  "+[":"{{}{}}{left}", "+'":"""""{left}"}
 
-功能键:=[	"esc","backspace","space","enter","tab","delete","f4"	]
+功能键:=[	"esc","backspace","space","enter","tab","delete"	]
 
 hotkey,if									;少了这句,差点要死
 for 序号,值 in 数字按键组
@@ -85,10 +85,8 @@ winget,上个进程名,ProcessName,A
 
 setTimer,根据进程切换输入法和标点,500
 
-#include 获取光标位置.ahk							;调用的函数文件放在这一块
-
 #IF
-$f4::										;切换单字模式的按键,自行修改
+$f4::										;切换单字模式的按键,自行修改,不需要可以删除这个热键
 if(输入法开关){
 	if(单字模式:=!单字模式){
 		tooltip,单字模式,%A_caretx% ,% A_carety-25
@@ -305,8 +303,7 @@ return
 			产生字串(待转化字符)
 		}
 		产生候选()
-;		if((strlen(待转化字符)==2||strlen(插入字符)==2) && !单字模式 && 自动进入选字模式时间)
-;			setTimer,超时进入选字状态,-%自动进入选字模式时间%
+
 	}else if(选字状态){								;输入法字母键的四个状态：输入状态，选字状态，插入中输入状态，插入中选字状态
 		选中字:=字母键到字表[按键]						;好晕@_@
 		if(选中字){
@@ -579,16 +576,14 @@ return
 return
 }
 
-
 根据进程切换输入法和标点:
 	winget,进程名,ProcessName,A
 	if(进程名 != 上个进程名){
 		if (进程名 && instr(需要输入法的程序列表,进程名)){
 			if (instr(使用英文标点的程序列表,进程名)){
 				启用中文标点:=0
-			}else{
+			}else
 				启用中文标点:=1
-			}
 			if(!输入法开关){
 				输入法开关:=1
 				自动切换:=1
@@ -601,7 +596,6 @@ return
 				自动切换:=1
 				gosub,切换输入法
 			}
-			
 		}
 		上个进程名:=进程名
 	}
@@ -611,3 +605,34 @@ return
 
 #ifwinactive 输入法gbk版.ahk							;在脚本保存后重启脚本
 ~^s::reload
+
+; 获取光标位置（坐标相对于屏幕）,河许人提供
+; From Acc.ahk by Sean, jethrow, malcev, FeiYue
+
+获取光标位置(){					;Byref 光标X="", Byref 光标Y=""
+	static init
+	CoordMode, Caret, Screen
+	光标X:=A_CaretX, 光标Y:=A_CaretY
+	if (!光标X or !光标Y){
+		Try {
+			if (!init)
+				init:=DllCall("LoadLibrary","Str","oleacc","Ptr")
+				VarSetCapacity(IID,16), idObject:=OBJID_CARET:=0xFFFFFFF8
+				, NumPut(idObject==0xFFFFFFF0?0x0000000000020400:0x11CF3C3D618736E0, IID, "Int64")
+				, NumPut(idObject==0xFFFFFFF0?0x46000000000000C0:0x719B3800AA000C81, IID, 8, "Int64")
+				if DllCall("oleacc\AccessibleObjectFromWindow"
+				, "Ptr",WinExist("A"), "UInt",idObject, "Ptr",&IID, "Ptr*",pacc)=0
+			{
+				Acc:=ComObject(9,pacc,1), ObjAddRef(pacc)
+				, Acc.accLocation(ComObj(0x4003,&x:=0), ComObj(0x4003,&y:=0)
+				, ComObj(0x4003,&w:=0), ComObj(0x4003,&h:=0), ChildId:=0)
+				, 光标X:=NumGet(x,0,"int"), 光标Y:=NumGet(y,0,"int")
+			}
+		}
+		if(光标X=0 && 光标Y=0){
+			光标类型:="Mouse"
+		}else 光标类型:="Acc"
+	}else 光标类型:="Caret"
+	return {x:光标X, y:光标Y,类型:光标类型}
+}
+	
