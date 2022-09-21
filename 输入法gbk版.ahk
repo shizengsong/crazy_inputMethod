@@ -59,19 +59,7 @@ gbk单字表 :=生成音词表(A_ScriptDir . "\词典\gbk全字典.txt")			;疯�
 
 功能键:=[	"esc","backspace","space","enter","tab","delete"	]
 
-hotkey,if									;少了这句,差点要死
-for 序号,值 in 数字按键组
-	hotkey,% "$" 值,接管按键,on
-for 序号,值 in 字母按键组{
-	hotkey,% "$" 值,接管按键,on
-	hotkey,% "$+" 值,接管按键,on
-}
-for 序号,值 in 功能键
-	hotkey,% "$" 值,接管按键,on
-for 键 in 中文标点
-	hotkey,% "$" 键,接管按键,on
-for 键 in 英文括号按键
-	hotkey,% "$" 键,接管按键,on
+gosub,注册按键
 
 引号已发送:=1									;双引号问题
 汉语结构单字:="自从到往在由向于至趁当按靠照用据拿比因为被给让叫归把将管对跟和给替同和跟与及或而并的得地着了过连们所吗么吧呢啊着嘛呗啦嘞喽都全单共光尽净仅就又只才可倒却不没别刚正将老总很极最太更"						;汉语里面常用的结构性的单字，为构造词时排除所用
@@ -117,9 +105,7 @@ if(A_thishotkey!="~Lshift"||errorlevel)
 if (输入法开关){							;切换中英文
 	mousegetpos,x,y
 	Hotkey, IfWinActive
-	for 序号,值 in 所有按键{
-		hotkey,% "$" 值,接管按键,on
-	}
+	gosub,注册按键
 	hotkey,^.,on
 	if(自动切换){
 		自动切换:=0
@@ -140,9 +126,7 @@ if (输入法开关){							;切换中英文
 	}
 	setTimer,关闭tooltip,-500
 	Hotkey, IfWinActive
-	for 序号,值 in 所有按键{
-		hotkey,% "$" 值,接管按键,off
-	}
+	gosub,注销按键
 	hotkey,^.,off
 	menu,tray,icon,%A_ScriptDir%\图标\图标文件.icl,2			;清空已记录输入
 }
@@ -599,6 +583,38 @@ return
 		}
 		上个进程名:=进程名
 	}
+return
+
+注册按键:
+hotkey,if									;少了这句,差点要死
+for 序号,值 in 数字按键组
+	hotkey,% "$" 值,接管按键,on
+for 序号,值 in 字母按键组{
+	hotkey,% "$" 值,接管按键,on
+	hotkey,% "$+" 值,接管按键,on
+}
+for 序号,值 in 功能键
+	hotkey,% "$" 值,接管按键,on
+for 键 in 中文标点
+	hotkey,% "$" 键,接管按键,on
+for 键 in 英文括号按键
+	hotkey,% "$" 键,接管按键,on
+return
+
+注销按键:
+hotkey,if
+for 序号,值 in 数字按键组
+	hotkey,% "$" 值,接管按键,off
+for 序号,值 in 字母按键组{
+	hotkey,% "$" 值,接管按键,off
+	hotkey,% "$+" 值,接管按键,off
+}
+for 序号,值 in 功能键
+	hotkey,% "$" 值,接管按键,off
+for 键 in 中文标点
+	hotkey,% "$" 键,接管按键,off
+for 键 in 英文括号按键
+	hotkey,% "$" 键,接管按键,off
 return
 
 ^esc::exitapp									;ctrl+esc强制退出输入法
